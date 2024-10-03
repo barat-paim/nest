@@ -1,77 +1,106 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
-  const [prompt, setPrompt] = useState('');
-  const [response, setResponse] = useState('');
+  const [prompt, setPrompt] = useState(''); // User input for the prompt
+  const [response, setResponse] = useState(''); // Text response from OpenAI
+  const [audioSrc, setAudioSrc] = useState(''); // Audio source for voice response
+  const [selectedTab, setSelectedTab] = useState('text'); // Track whether user selects text or voice response
+  const [loading, setLoading] = useState(false); // Loading state to show spinner or feedback
 
-  const handleSubmit = async (e) => {
+  useEffect(() => {
+     console.log("audio source: ", audioSrc);
+  },  [audioSrc]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // For now, just set the response to whatever the prompt is (placeholder)
-    setResponse(`You typed: ${prompt}`);
+    if (prompt.trim() === '') return;
+    setLoading(true);
+
+    try {
+      // Send request to the backend API
+      const res = await fetch('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt, responseType: selectedTab }), // Send prompt and responseType (text/voice)
+      });
+
+      if (selectedTab === 'text') {
+        const textResponse = await res.text(); // For text, read the plain text response
+        setResponse(textResponse); // Set the response to display
+        setAudioSrc(''); // Clear audio when in text mode
+      } else if (selectedTab === 'voice') {
+        setAudioSrc('');
+        const blob = await res.blob(); // For voice, get the blob of the audio
+        const audioUrl = URL.createObjectURL(blob); // Create a URL for the audio blob
+        setAudioSrc(audioUrl); // Set the audio source for playback
+        setResponse(''); // Clear text response when in voice mode
+      }
+    } catch (error) {
+      console.error('Error submitting prompt:', error);
+    } finally {
+      setLoading(false); // Stop the loading state
+    }
+
+    setPrompt(''); // Clear the input after submission
   };
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        {/* Input Field */}
-        <form onSubmit={handleSubmit} className="flex flex-col items-center">
-          <input
-            type="text"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Type your prompt here..."
-            className="w-full text-center p-4 border-2 border-gray-300 rounded-lg text-lg"
-            style={{ fontSize: '24px', width: '400px' }}
-          />
-          <button
-            type="submit"
-            className="mt-4 p-2 bg-blue-500 text-white rounded-lg"
-            style={{ fontSize: '18px' }}
-          >
-            Submit
-          </button>
-        </form>
+    <div className="min-h-screen w-full flex flex-col items-center justify-center">
+      {/* Tabs for Text and Voice Response */}
+      <div className="flex space-x-4 mb-4">
+        <button
+          className={`p-2 rounded-lg ${selectedTab === 'text' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
+          onClick={() => setSelectedTab('text')}
+        >
+          Text
+        </button>
+        <button
+          className={`p-2 rounded-lg ${selectedTab === 'voice' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
+          onClick={() => setSelectedTab('voice')}
+        >
+          Voice
+        </button>
+      </div>
 
-        {/* Output Display */}
-        {response && (
-          <div
-            className="mt-6 p-4 bg-gray-200 border border-gray-300 rounded-lg"
-            style={{ width: '400px', fontSize: '18px', textAlign: 'center' }}
-          >
-            <p>{response}</p>
-          </div>
-        )}
-      </main>
+      {/* Input Field */}
+      <form onSubmit={handleSubmit} className="flex flex-col items-center">
+        <input 
+          type="text" 
+          value={prompt} 
+          onChange={(e) => setPrompt(e.target.value)} 
+          placeholder="Type your prompt here..." 
+          className="w-full text-center p-4 text-gray-400 border border-gray-500 bg-neutral-700 rounded-lg text-lg focus:outline-none"
+          style={{ fontSize: '24px', width: '400px' }}
+        />
+        <button 
+          type="submit" 
+          className="mt-4 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
+          disabled={loading}
+        >
+          {loading ? 'Loading...' : 'Send'}
+        </button>
+      </form>
 
-      {/* Footer with Links */}
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://coda.io/@yourusername/about"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          About
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://coda.io/@yourusername/projects"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Projects
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://coda.io/@yourusername/contact"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Contact
-        </a>
-      </footer>
+      {/* Text Response Display */}
+      {selectedTab === 'text' && response && (
+        <div className="mt-4 p-4 bg-gray-800 text-white rounded-lg">
+          <p>{response}</p>
+        </div>
+      )}
+
+      {/* Audio Player for Voice Response */}
+      {selectedTab === 'voice' && audioSrc && (
+        <div className="mt-4">
+          <audio controls autoPlay>
+            <source src={audioSrc} type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+      )}
     </div>
   );
 }

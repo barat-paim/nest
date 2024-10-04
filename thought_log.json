@@ -1,0 +1,38 @@
+[
+  {
+    "content": "find out how much car rental cost for 2 days and extra 12 hours",
+    "timestamp": "2024-10-04T16:16:01.285224",
+    "processed": true,
+    "type": "general"
+  },
+  {
+    "content": "find out places to stay for the 2 days",
+    "timestamp": "2024-10-04T16:17:08.975220",
+    "processed": true,
+    "type": "general"
+  },
+  {
+    "content": "the staying experience should be good. so thats there. ",
+    "timestamp": "2024-10-04T16:18:01.032359",
+    "processed": true,
+    "type": "general"
+  },
+  {
+    "content": "have to pack clothes. and not sure if i have all the clothes for the trip. what if i need warm clothes. and do i even have enough new warm clothes. ",
+    "timestamp": "2024-10-04T16:19:35.672449",
+    "processed": true,
+    "type": "action"
+  },
+  {
+    "content": "book all the hotels, and the car rental one month before the trip",
+    "timestamp": "2024-10-04T16:20:15.609360",
+    "processed": true,
+    "type": "general"
+  },
+  {
+    "content": "any events or experience planned should also be taken care. ",
+    "timestamp": "2024-10-04T16:20:31.336209",
+    "processed": true,
+    "type": "general"
+  }
+]
